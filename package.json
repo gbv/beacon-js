@@ -12,7 +12,7 @@
   "main": "index",
   "dependencies": {},
   "devDependencies": {
-    "mocha": "0.3.x"
+    "mocha": "0.3"
   },
   "optionalDependencies": {
 	"jquery": "1.5",
