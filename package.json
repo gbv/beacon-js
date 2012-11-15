@@ -1,0 +1,27 @@
+{
+  "name": "beacon",
+  "description": "Beacon link dump format parser and serializer",
+  "author": "Jakob Voß <voss@gbv.de>",
+  "version": "0.0.1",
+  "keywords": ["data","links","parser","rdf"],
+  "homepage": "https://github.com/gbv/beacon-js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gbv/beacon-js.git"
+  },
+  "main": "index",
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "0.3.x"
+  },
+  "optionalDependencies": {
+	"jquery": "1.5",
+    "reclinejs": "0.7.0"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "scripts": {
+    "test": "make test"
+  }
+}
