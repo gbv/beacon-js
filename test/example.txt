@@ -1,0 +1,5 @@
+#FORMAT: BEACON
+#NAME: Test
+
+foo|bar
+doz

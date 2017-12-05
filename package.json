@@ -1,27 +1,43 @@
 {
-  "name": "beacon",
-  "description": "Beacon link dump format parser and serializer",
-  "author": "Jakob Voß <voss@gbv.de>",
+  "name": "beacon-links",
   "version": "0.0.1",
-  "keywords": ["data","links","parser","rdf"],
-  "homepage": "https://github.com/gbv/beacon-js",
+  "description": "BEACON link dump format implementation in JavaScript",
+  "author": "Jakob Voß",
+  "main": "index.js",
+  "scripts": {
+    "lint": "./node_modules/.bin/standard *.js lib/*.js",
+    "fix": "./node_modules/.bin/standard --fix *.js lib/*.js",
+    "test": "./node_modules/.bin/jest test"
+  },
+  "bin": {
+    "beaconlinks": "./beaconlinks.js"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "testRegex": "test/(.+)\\.js"
+  },
   "repository": {
     "type": "git",
-    "url": "git://github.com/gbv/beacon-js.git"
+    "url": "git+https://github.com/gbv/beacon-links.git"
   },
-  "main": "index",
-  "dependencies": {},
-  "devDependencies": {
-    "mocha": "0.3"
-  },
-  "optionalDependencies": {
-	"jquery": "1.5",
-    "reclinejs": "0.7.0"
+  "homepage": "https://github.com/gbv/beacon-links#readme",
+  "keywords": [
+    "links",
+    "RDF"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gbv/beacon-links/issues"
   },
   "engines": {
-    "node": "*"
+    "node": ">= 6.5.0"
   },
-  "scripts": {
-    "test": "make test"
+  "devDependencies": {
+    "jest": "^21.2.1",
+    "standard": "^10.0"
+  },
+  "dependencies": {
+    "uri-js": "^3.0.2",
+    "uri-templates": "^0.2.0"
   }
 }
