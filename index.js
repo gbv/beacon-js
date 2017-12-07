@@ -14,5 +14,5 @@ module.exports = {
   metaFieldValue,
   metaFields,
 
-  uriPattern: datatypes.uriPattern,
+  uriPattern: datatypes.uriPattern
 }

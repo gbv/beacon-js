@@ -1,4 +1,4 @@
-# beacon.js
+# beacon-links.js
 
 > JavaScript implementation of [BEACON link dump format](https://gbv.github.io/beaconspec/)
 
@@ -21,6 +21,8 @@ Requires at least Node 6.4
 
 *Final API has not been specified yet. Please try the command line client for testing!*
 
+<!--
+
 ### Parsing
 
 ~~~javascript
@@ -36,17 +38,18 @@ const beacon = require('beacon-links')
 
 ...
 ~~~
+-->
 
 ### Command line client
 
 This packages includes a simple command-line client to parse, serialize, and map BEACON link dumps.
 
 ~~~shell
-$ beaconlinks -h
-$ beaconlinks beacon.txt
+$ beaconlinks -h                    # show help
+$ beaconlinks beacon.txt            # read and write BEACON format
 $ beaconlinks < beacon.txt
-$ beaconlinks -l beacon.txt
-$ beaconlinks -p beacon.txt
+$ beaconlinks -m beacon.txt         # only read and write meta lines
+$ beaconlinks -f rdf beacon.txt     # map to RDF (incomplete by now)
 ~~~
 
 ## API

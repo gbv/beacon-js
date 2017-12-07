@@ -1,5 +1,17 @@
 #FORMAT: BEACON
 #NAME: Test
 
-foo|bar
-doz
+source
+source|
+source|annotation
+source|annotation|
+source||target
+source|annotation|target
+source|annotation|target|junk
+ 
+|annotation
+|annotation|target
+||target
+
+|
+||

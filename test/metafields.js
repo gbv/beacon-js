@@ -50,6 +50,9 @@ test('metaFieldValue', () => {
       let got = metaFieldValue(field, value)
       let want = tests[field][value]
       expect(String(got)).toBe(String(tests[field][value]))
+      if (typeof want === 'object') { // uriPattern
+        expect(typeof got).toBe('object')
+      }
     }
   }
 })
