@@ -1,6 +1,6 @@
 {
   "name": "beacon-links",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "BEACON link dump format implementation in JavaScript",
   "author": "Jakob Voß",
   "main": "index.js",
@@ -37,6 +37,7 @@
     "standard": "^10.0"
   },
   "dependencies": {
+    "rdflib": "==0.16.1",
     "uri-js": "^3.0.2",
     "uri-templates": "^0.2.0"
   }

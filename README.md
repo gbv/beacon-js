@@ -56,6 +56,24 @@ $ beaconlinks -f rdf beacon.txt     # map to RDF (incomplete by now)
 
 ...
 
+### Mapping to RDF
+
+BEACON link dumps can be mapped to RDF with the `rdfmapper` function. It
+requires an instance of the [JavaScript RDF Interfaces DataFactory interface].
+
+~~~javascript
+const { rdfmapper } = require('beacon-links')
+
+var mapper = rdfmapper(dataFactory)
+for (let triple of mapper.triples(linkDump)) {
+  // ...
+}
+
+~~~
+
+[JavaScript RDF Interfaces DataFactory interface]: http://rdf.js.org/#datafactory-interface
+[rdf-ext]: https://www.npmjs.com/package/rdf-ext
+
 ## Contribution
 
 Bug reports and fixes [are welcome](https://github.com/gbv/beacon-js/issues)! 

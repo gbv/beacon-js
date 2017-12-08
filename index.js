@@ -2,6 +2,7 @@ const characters = require('./lib/characters')
 const links = require('./lib/links')
 const datatypes = require('./lib/datatypes')
 const { metaFieldValue, metaFields } = require('./lib/metafields')
+const rdfmapper = require('./lib/rdfmapper')
 
 module.exports = {
   replaceDisallowedChars: characters.replaceDisallowedChars,
@@ -13,6 +14,8 @@ module.exports = {
 
   metaFieldValue,
   metaFields,
+
+  rdfmapper,
 
   uriPattern: datatypes.uriPattern
 }

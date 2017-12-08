@@ -18,6 +18,7 @@ test('parser: links', () => {
   })
 })
 
+/*
 test('parser: triples', () => {
   beacon.parser('test/example.txt', dump => {
     expect([...dump.triples()]).toEqual([])
@@ -33,3 +34,4 @@ test('parser: triples', () => {
   })
 
 })
+*/
