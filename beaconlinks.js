@@ -91,24 +91,22 @@ function metaLines (meta, brief = false) {
 }
 
 beacon.parser(stream, (dump) => {
-  let meta = dump.meta()
-
   if (opt.format === 'ndjson') {
     for (let link of dump.links()) {
       stdout.write(JSON.stringify(link) + '\n')
     }
   } else if (opt.format === 'rdf') {
-    const rdfmapper = beacon.rdfmapper(RDF)
+    const rdfmapper = beacon.rdfMapper(RDF)
 
     if (!opt.links) {
-      for (let triple of rdfmapper.metaFieldTriples(meta)) {
+      for (let triple of rdfmapper.metaFieldTriples(dump.metaFields)) {
         rdfWriter.add(triple)
       }
       stdout.write('\n')
     }
 
     if (!opt.meta) {
-      for (let triple of rdfmapper.linkTriples(dump.links(), meta.ANNOTATION)) {
+      for (let triple of rdfmapper.linkTriples(dump.links(), dump.metaFields.ANNOTATION)) {
         rdfWriter.add(triple)
       }
     }
@@ -121,7 +119,7 @@ beacon.parser(stream, (dump) => {
     }
   } else {
     if (!opt.links) {
-      var metalines = metaLines(meta, opt.brief)
+      var metalines = metaLines(dump.metaFields, opt.brief)
       if (metalines.length) {
         stdout.write(metalines.join('\n') + '\n')
         if (!opt.meta) stdout.write('\n')

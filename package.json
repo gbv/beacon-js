@@ -37,7 +37,6 @@
     "standard": "^10.0"
   },
   "dependencies": {
-    "rdflib": "==0.16.1",
     "uri-js": "^3.0.2",
     "uri-templates": "^0.2.0"
   }

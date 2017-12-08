@@ -3,8 +3,7 @@ const beacon = require('../index')
 test('parser: links', () => {
   beacon.parser('test/example.txt', dump => {
 
-    let meta = dump.meta()
-    expect(meta.NAME).toBe('Test')
+    expect(dump.metaFields.NAME).toBe('Test')
 
     let links = [...dump.links()]
     expect(links.length).toBe(7)

@@ -54,6 +54,56 @@ $ beaconlinks -f rdf beacon.txt     # map to RDF (incomplete by now)
 
 ## API
 
+### Links
+
+Implement [BEACON links](http://gbv.github.io/beaconspec/beacon.html#links)
+
+~~~
+interface Link {
+  attribute string source;
+  attribute string target;
+  attribute string relation;
+  attribute string annotation;
+}
+~~~
+
+### Link dumps
+
+Implement [BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#introduction)
+
+~~~
+interface LinkDump {
+  attribute MetaFields metaFields;
+  Link *links();
+}
+~~~
+
+### URI Patterns
+
+Implement [BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#uri-patterns)
+
+~~~
+interface URIPattern {
+  string expand(string ID);
+  attribute string uriSpace;
+  ttribute string uriSpace;
+  attribute string uriRegexPattern;
+  string toString();
+}
+~~~
+
+### Meta fields
+
+Implement [BEACON meta fields](http://gbv.github.io/beaconspec/beacon.html#meta-fields)
+
+...
+
+### BEACON file parser
+
+...
+
+### BEACON file serializer
+
 ...
 
 ### Mapping to RDF
@@ -62,9 +112,9 @@ BEACON link dumps can be mapped to RDF with the `rdfmapper` function. It
 requires an instance of the [JavaScript RDF Interfaces DataFactory interface].
 
 ~~~javascript
-const { rdfmapper } = require('beacon-links')
+const { rdfMapper } = require('beacon-links')
 
-var mapper = rdfmapper(dataFactory)
+var mapper = rdfMapper(dataFactory)
 for (let triple of mapper.triples(linkDump)) {
   // ...
 }
