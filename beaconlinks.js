@@ -8,14 +8,15 @@ const beacon = require('./index')
 const fs = require('fs')
 const stdout = process.stdout
 
-// yet another getopt-alike implementation
+// yet another getopt-alike implementation to avoid dependencies
 const [opt, file] = ((args) => {
   var options = {
     '-h, --help': 'show usage information',
     '-b, --brief': 'omit meta fields having default values',
     '-l, --links': 'only write links',
     '-m, --meta': 'only read and write meta fields',
-    '-f, --format <format>': 'output format (txt|ndjson|rdf)'
+    '-f, --format <format>': 'output format (txt|ndjson|rdf)',
+    '-c, --color': 'enable color output'
   }
 
   var opt = {}
@@ -75,21 +76,6 @@ const rdfWriter = (out => {
 
 const stream = file === '-' ? process.stdin : fs.createReadStream(file)
 
-function metaLines (meta, brief = false) {
-  var lines = []
-  for (let field in meta) {
-    if (meta[field] !== '') {
-      if (!brief || String(meta[field]) !== String(beacon.metaFieldValue(field))) {
-        lines.push('#' + field + ': ' + meta[field])
-      }
-    }
-  }
-  if (lines.length || !brief) {
-    lines.unshift('#FORMAT: BEACON')
-  }
-  return lines
-}
-
 beacon.parser(stream, (dump) => {
   if (opt.format === 'ndjson') {
     for (let link of dump.links()) {
@@ -118,16 +104,23 @@ beacon.parser(stream, (dump) => {
       }
     }
   } else {
+    var highlight = opt.color ? {
+      delimiter: s => '\u001b[2m' + s + '\u001b[22m',
+      field: s => '\u001b[1m' + s + '\u001b[22m',
+      source: s => '\u001b[34m' + s + '\u001b[39m',
+      target: s => '\u001b[36m' + s + '\u001b[39m'
+    } : {}
+    var writer = require('./lib/writer')(process.stdout, {
+      omitDefaults: opt.brief,
+      omitEmptyLine: opt.meta,
+      highlight: highlight
+    })
     if (!opt.links) {
-      var metalines = metaLines(dump.metaFields, opt.brief)
-      if (metalines.length) {
-        stdout.write(metalines.join('\n') + '\n')
-        if (!opt.meta) stdout.write('\n')
-      }
+      writer.writeMetaLines(dump.metaFields)
     }
     if (!opt.meta) {
       for (let tokens of dump.linkTokens()) {
-        stdout.write(tokens.join('|') + '\n')
+        writer.writeLinkLine(...tokens)
       }
     }
   }

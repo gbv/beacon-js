@@ -31,14 +31,29 @@ const beacon = require('beacon-links')
 ...
 ~~~
 
+-->
+
 ### Serializing
 
 ~~~javascript
-const beacon = require('beacon-links')
+const { beaconWriter } = require('beacon-links')
 
-...
+const writer = beaconWriter(outputStream, options)
+writer.writeMetaLines(metaFields)
+writer.writeLinkLine(sourceTokens, annotationToken, targetToken)
 ~~~
--->
+
+***Configuration***
+
+* `omitDefaults` to omit meta fields with default values (false by default)
+* `omitEmptyLine` to omit the empty line after meta fields
+* `highlight`: optional object with functions to highlight
+    * `delimiter` (delimiter characters)
+    * `field` (meta field name)
+    * `value` (meta field value)
+    * `source` (source token)
+    * `annotation` (annotation token)
+    * `target` (target token)
 
 ### Command line client
 
