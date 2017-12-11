@@ -82,7 +82,7 @@ beacon.parser(stream, (dump) => {
       stdout.write(JSON.stringify(link) + '\n')
     }
   } else if (opt.format === 'rdf') {
-    const rdfmapper = beacon.rdfMapper(RDF)
+    const rdfmapper = beacon.RDFMapper(RDF)
 
     if (!opt.links) {
       for (let triple of rdfmapper.metaFieldTriples(dump.metaFields)) {
@@ -110,7 +110,7 @@ beacon.parser(stream, (dump) => {
       source: s => '\u001b[34m' + s + '\u001b[39m',
       target: s => '\u001b[36m' + s + '\u001b[39m'
     } : {}
-    var writer = require('./lib/writer')(process.stdout, {
+    var writer = beacon.Writer(process.stdout, {
       omitDefaults: opt.brief,
       omitEmptyLine: opt.meta,
       highlight: highlight

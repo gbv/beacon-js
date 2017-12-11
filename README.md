@@ -36,9 +36,9 @@ const beacon = require('beacon-links')
 ### Serializing
 
 ~~~javascript
-const { beaconWriter } = require('beacon-links')
+const { Writer } = require('beacon-links')
 
-const writer = beaconWriter(outputStream, options)
+const writer = Writer(outputStream, options)
 writer.writeMetaLines(metaFields)
 writer.writeLinkLine(sourceTokens, annotationToken, targetToken)
 ~~~
@@ -101,7 +101,7 @@ Implement [BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#uri-pa
 interface URIPattern {
   string expand(string ID);
   attribute string uriSpace;
-  ttribute string uriSpace;
+  attribute string uriSpace;
   attribute string uriRegexPattern;
   string toString();
 }
@@ -117,9 +117,14 @@ Implement [BEACON meta fields](http://gbv.github.io/beaconspec/beacon.html#meta-
 
 ...
 
-### BEACON file serializer
+### BEACON file writer
 
-...
+~~~
+interface Writer {
+  void writeMetaLines(MetaFields meta);
+  void writeLinkLine(string source, string annotation, string target);
+}
+~~~
 
 ### Mapping to RDF
 
@@ -127,9 +132,9 @@ BEACON link dumps can be mapped to RDF with the `rdfmapper` function. It
 requires an instance of the [JavaScript RDF Interfaces DataFactory interface].
 
 ~~~javascript
-const { rdfMapper } = require('beacon-links')
+const { RDFMapper } = require('beacon-links')
 
-var mapper = rdfMapper(dataFactory)
+var mapper = RDFMapper(dataFactory)
 for (let triple of mapper.triples(linkDump)) {
   // ...
 }

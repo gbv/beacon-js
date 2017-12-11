@@ -1,11 +1,12 @@
-const { beaconWriter, metaFields } = require('../index')
-
+const { Writer, MetaFields } = require('../index')
 
 test('writer', () => {
   let out = {s:'', write(s) { this.s = this.s + s }}
 
-  let writer = beaconWriter(out)
-  writer.writeMetaLines(metaFields({NAME:'!\n!'}))
+  let writer = Writer(out)
+  expect(writer).toBeInstanceOf(Writer)
+
+  writer.writeMetaLines(MetaFields({NAME:'!\n!'}))
 
   expect(out.s).toMatch(/^#FORMAT: BEACON\n/)
 })

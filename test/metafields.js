@@ -1,4 +1,4 @@
-const { metaFieldValue, metaFields, uriPattern } = require('../index')
+const { metaFieldValue, MetaFields, uriPattern } = require('../index')
 
 const tests = {
   PREFIX: {
@@ -58,10 +58,12 @@ test('metaFieldValue', () => {
 })
 
 test('metaFields', () => {
-  var meta = metaFields({
+  var meta = MetaFields({
     NAME: 'alice| bob', 
     FOO: 'bar'
   })
+  expect(meta).toBeInstanceOf(MetaFields)
+
   expect(String(meta.PREFIX)).toBe('{+ID}')
   expect(String(meta.TARGET)).toBe('{+ID}')
   expect(meta.RELATION).toBe('http://www.w3.org/2000/01/rdf-schema#seeAlso')

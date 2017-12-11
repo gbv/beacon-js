@@ -1,8 +1,8 @@
-const { constructLink, metaFields } = require('../index')
+const { constructLink, MetaFields } = require('../index')
 
 test('constructLink', () => {
 
-  const meta = metaFields({ MESSAGE: 'Hello World!' })
+  const meta = MetaFields({ MESSAGE: 'Hello World!' })
   
   expect(constructLink(meta,['foo'])).toEqual({
     source: 'foo',

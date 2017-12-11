@@ -1,23 +1,18 @@
-const beaconWriter = require('./lib/writer')
+const Writer = require('./lib/writer')
 const characters = require('./lib/characters')
 const links = require('./lib/links')
-const { metaFieldValue, metaFields } = require('./lib/metafields')
+const { metaFieldValue, MetaFields } = require('./lib/metafields')
 const uriPattern = require('./lib/uripattern')
-const rdfMapper = require('./lib/rdfmapper')
+const RDFMapper = require('./lib/rdfmapper')
 
 module.exports = {
-  beaconWriter,
-
+  MetaFields,
+  Writer,
   replaceDisallowedChars: characters.replaceDisallowedChars,
   whitespaceNormalize: characters.whitespaceNormalize,
-
   parser: require('./lib/parser.js'),
-
   constructLink: links.constructLink,
-
   metaFieldValue,
-  metaFields,
-
   uriPattern,
-  rdfMapper
+  RDFMapper
 }
