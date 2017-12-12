@@ -69,9 +69,9 @@ $ beaconlinks -f rdf beacon.txt     # map to RDF (incomplete by now)
 
 ## API
 
-### Links
+### Link
 
-Implement [BEACON links](http://gbv.github.io/beaconspec/beacon.html#links)
+Implements [BEACON links](http://gbv.github.io/beaconspec/beacon.html#links)
 
 ~~~
 interface Link {
@@ -82,9 +82,9 @@ interface Link {
 }
 ~~~
 
-### Link dumps
+### LinkDump
 
-Implement [BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#introduction)
+Implements [BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#introduction)
 
 ~~~
 interface LinkDump {
@@ -93,9 +93,9 @@ interface LinkDump {
 }
 ~~~
 
-### URI Patterns
+### URIPattern
 
-Implement [BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#uri-patterns)
+Implements [BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#uri-patterns)
 
 ~~~
 interface URIPattern {
@@ -117,16 +117,33 @@ Implement [BEACON meta fields](http://gbv.github.io/beaconspec/beacon.html#meta-
 
 ...
 
-### BEACON file writer
+### Writer
+
+Implements serialization of link dumps in [BEACON format](http://gbv.github.io/beaconspec/beacon.html#beacon-format)
 
 ~~~
 interface Writer {
   void writeMetaLines(MetaFields meta);
+
+  // high level interface
+  void writeLink(Link link);
+
+  // low level interface
   void writeLinkLine(string source, string annotation, string target);
 }
 ~~~
 
-### Mapping to RDF
+### RDFMapper
+
+~~~
+interface RDFMapper {
+  Object *triples(LinkDump dump);
+
+  Object *metaTriples(MetaFields meta);
+  Object *linkTriples(Link *linkGenerator);
+  Object *countTriples();
+}
+~~~
 
 BEACON link dumps can be mapped to RDF with the `rdfmapper` function. It
 requires an instance of the [JavaScript RDF Interfaces DataFactory interface].

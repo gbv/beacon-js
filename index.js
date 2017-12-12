@@ -4,6 +4,7 @@ const links = require('./lib/links')
 const { metaFieldValue, MetaFields } = require('./lib/metafields')
 const uriPattern = require('./lib/uripattern')
 const RDFMapper = require('./lib/rdfmapper')
+const RDFSerializer = require('./lib/rdfserializer')
 
 module.exports = {
   MetaFields,
@@ -14,5 +15,6 @@ module.exports = {
   constructLink: links.constructLink,
   metaFieldValue,
   uriPattern,
-  RDFMapper
+  RDFMapper,
+  RDFSerializer
 }

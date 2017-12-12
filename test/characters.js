@@ -5,19 +5,18 @@ test('whitespaceNormalize', () => {
 })
 
 test('replaceDisallowedChars', () => {
-
   const chars = (from, to) => {
-    function* codepoints(start, stop) {
-      while (start <= stop) yield start, start++
+    function * codepoints (start, stop) {
+      while (start <= stop) yield start++
     }
     return String.fromCodePoint(...codepoints(from, to))
   }
 
   const strip = (str) => replaceDisallowedChars(str, true)
 
-  expect(strip(chars(0,0x20))).toBe(String.fromCodePoint(0x09,0x0A,0x0C,0x20))
-  expect(strip(chars(0x7E,0xA0))).toBe('~\xA0')
-  expect(strip(chars(0xD7FF,0xE000))).toBe('\uD7FF\uE000')
+  expect(strip(chars(0, 0x20))).toBe(String.fromCodePoint(0x09, 0x0A, 0x0C, 0x20))
+  expect(strip(chars(0x7E, 0xA0))).toBe('~\xA0')
+  expect(strip(chars(0xD7FF, 0xE000))).toBe('\uD7FF\uE000')
 
 /*
   TODO

@@ -57,24 +57,14 @@ Options:
   return [opt, file]
 })(process.argv.slice(2))
 
-// Partial implementation of RDF Environment Interface as NTriples writer
-// or DataFactory interface
-const RDF = {
-  triple: (subject, predicate, object) =>
-    [subject, predicate, object].join(' ') + ' .\n',
-  namedNode: (value) =>
-    value.match(/^[a-z]+:[a-z]+$/i) ? value : '<' + value + '>',
-  blankNode: (name) =>
-    '_:' + name,
-  literal: (value, datatype) =>
-    '"' + value + '"' + (datatype ? '^^' + datatype : '')
-}
-
-const rdfWriter = (out => {
-  return { add: triple => out.write(triple) }
-})(stdout)
-
 const stream = file === '-' ? process.stdin : fs.createReadStream(file)
+
+const highlight = opt.color ? {
+  delimiter: s => '\u001b[2m' + s + '\u001b[22m',
+  field: s => '\u001b[1m' + s + '\u001b[22m',
+  source: s => '\u001b[34m' + s + '\u001b[39m',
+  target: s => '\u001b[36m' + s + '\u001b[39m'
+} : {}
 
 beacon.parser(stream, (dump) => {
   if (opt.format === 'ndjson') {
@@ -82,34 +72,29 @@ beacon.parser(stream, (dump) => {
       stdout.write(JSON.stringify(link) + '\n')
     }
   } else if (opt.format === 'rdf') {
-    const rdfmapper = beacon.RDFMapper(RDF)
+    const rdfSerializer = beacon.RDFSerializer(highlight)
+    const rdfmapper = beacon.RDFMapper(rdfSerializer)
 
     if (!opt.links) {
-      for (let triple of rdfmapper.metaFieldTriples(dump.metaFields)) {
-        rdfWriter.add(triple)
+      for (let triple of rdfmapper.metaTriples(dump.metaFields)) {
+        stdout.write(triple)
       }
       stdout.write('\n')
     }
 
     if (!opt.meta) {
       for (let triple of rdfmapper.linkTriples(dump.links(), dump.metaFields.ANNOTATION)) {
-        rdfWriter.add(triple)
+        stdout.write(triple)
       }
     }
 
     if (!opt.links) {
       stdout.write('\n')
       for (let triple of rdfmapper.countTriples()) {
-        rdfWriter.add(triple)
+        stdout.write(triple)
       }
     }
   } else {
-    var highlight = opt.color ? {
-      delimiter: s => '\u001b[2m' + s + '\u001b[22m',
-      field: s => '\u001b[1m' + s + '\u001b[22m',
-      source: s => '\u001b[34m' + s + '\u001b[39m',
-      target: s => '\u001b[36m' + s + '\u001b[39m'
-    } : {}
     var writer = beacon.Writer(process.stdout, {
       omitDefaults: opt.brief,
       omitEmptyLine: opt.meta,

@@ -1,6 +1,8 @@
 #PREFIX: http://example.org/
 #TARGET: http://example.com/
 #RELATION: http://xmlns.com/foaf/0.1/primaryTopic
+#NAME: "
+#CONTACT: Bea Beacon <bea@example.org>
 #ANNOTATION: http://purl.org/dc/terms/extent
 
 abc|12|xy

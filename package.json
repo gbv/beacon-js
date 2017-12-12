@@ -6,15 +6,11 @@
   "main": "index.js",
   "scripts": {
     "lint": "./node_modules/.bin/standard *.js lib/*.js",
-    "fix": "./node_modules/.bin/standard --fix *.js lib/*.js",
+    "fix": "./node_modules/.bin/standard --fix *.js lib/*.js test/*.js",
     "test": "./node_modules/.bin/jest test"
   },
   "bin": {
     "beaconlinks": "./beaconlinks.js"
-  },
-  "jest": {
-    "collectCoverage": true,
-    "testRegex": "test/(.+)\\.js"
   },
   "repository": {
     "type": "git",
@@ -39,5 +35,12 @@
   "dependencies": {
     "uri-js": "^3.0.2",
     "uri-templates": "^0.2.0"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "testRegex": "test/(.+)\\.js"
+  },
+  "standard": {
+    "env": ["jest"]
   }
 }
