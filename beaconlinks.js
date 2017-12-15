@@ -6,10 +6,11 @@
 
 const beacon = require('./index')
 const fs = require('fs')
+const RDFData = require('./lib/rdfdatafactory')
 const stdout = process.stdout
 
-// yet another getopt-alike implementation to avoid dependencies
-const [opt, file] = ((args) => {
+// yet another getopt-alike (to avoid dependencies)
+const [opt, file] = (args => {
   var options = {
     '-h, --help': 'show usage information',
     '-b, --brief': 'omit meta fields having default values',
@@ -57,8 +58,6 @@ Options:
   return [opt, file]
 })(process.argv.slice(2))
 
-const stream = file === '-' ? process.stdin : fs.createReadStream(file)
-
 const highlight = opt.color ? {
   delimiter: s => '\u001b[2m' + s + '\u001b[22m',
   field: s => '\u001b[1m' + s + '\u001b[22m',
@@ -66,50 +65,69 @@ const highlight = opt.color ? {
   target: s => '\u001b[36m' + s + '\u001b[39m'
 } : {}
 
-beacon.parser(stream, (dump) => {
-  if (opt.format === 'ndjson') {
-    for (let link of dump.links()) {
-      stdout.write(JSON.stringify(link) + '\n')
-    }
-  } else if (opt.format === 'rdf') {
-    const rdfSerializer = beacon.RDFSerializer(highlight)
-    const rdfmapper = beacon.RDFMapper(rdfSerializer)
+const stream = (file === '-' ? process.stdin : fs.createReadStream(file))
+  .pipe(beacon.Parser({}))
+  .on('error', error => {
+    var msg = error
+    if (error.number !== undefined) msg += ' ' + error.number
+    if (error.line !== undefined) msg += ': ' + error.line
+    if (opt.color) msg = '\u001b[31m' + msg + '\u001b[39m'
+    console.error(msg)
+    process.exit(1)
+  })
 
-    if (!opt.links) {
-      for (let triple of rdfmapper.metaTriples(dump.metaFields)) {
+if (opt.format === 'ndjson') {
+  stream.on('data', link => stdout.write(JSON.stringify(link) + '\n'))
+} else if (opt.format === 'rdf') {
+  const rdfSerializer = RDFData(highlight)
+  const rdfmapper = beacon.RDFMapper(rdfSerializer)
+
+  var annotation
+  stream.on('meta', meta => { annotation = meta.ANNOTATION })
+
+  if (!opt.links) {
+    stream.on('meta', meta => {
+      for (let triple of rdfmapper.metaTriples(meta)) {
         stdout.write(triple)
       }
       stdout.write('\n')
-    }
+    })
+  }
 
-    if (!opt.meta) {
-      for (let triple of rdfmapper.linkTriples(dump.links(), dump.metaFields.ANNOTATION)) {
+  if (!opt.meta) {
+    stream.on('data', link => {
+      for (let triple of rdfmapper.linkTriples(link, annotation)) {
         stdout.write(triple)
       }
-    }
+    })
+  }
 
-    if (!opt.links) {
+  if (!opt.links) {
+    stream.on('end', () => {
       stdout.write('\n')
       for (let triple of rdfmapper.countTriples()) {
         stdout.write(triple)
       }
-    }
-  } else {
-    var writer = beacon.Writer(process.stdout, {
-      omitDefaults: opt.brief,
-      omitEmptyLine: opt.meta,
-      highlight: highlight
     })
-    if (!opt.links) {
-      writer.writeMetaLines(dump.metaFields)
-    }
-    if (!opt.meta) {
-      for (let tokens of dump.linkTokens()) {
-        writer.writeLinkLine(...tokens)
-      }
-    }
   }
-}, (error) => {
-  // TODO: not implemented yet
-  console.error(error)
-})
+} else {
+  const serializer = beacon.Serializer({
+    omitDefaults: opt.brief,
+    omitEmptyLine: opt.meta,
+    highlight: highlight
+  })
+
+  if (!opt.links) {
+    stream.on('meta', meta => {
+      for (let line of serializer.metaLines(meta)) {
+        stdout.write(line)
+      }
+    })
+  }
+
+  if (!opt.meta) {
+    stream.on('token', tokens => {
+      stdout.write(serializer.linkLine(...tokens))
+    })
+  }
+}

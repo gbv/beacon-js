@@ -1,20 +1,32 @@
-const beacon = require('../index')
+const { Parser, RDFMapper, Link } = require('../index')
 const { createReadStream } = require('fs')
 
-test('RDFMapper', () => {
-  beacon.parser(createReadStream('test/rdf-example.txt'), dump => {
-    const dataFactory = {
-      triple: (s, p, o) => [s, p, o],
-      namedNode: (uri) => '<' + uri + '>',
-      blankNode: (name) => '_:' + name,
-      literal: (value, datatype) =>
-        '"' + String(value).replace(/["\\\r\n]/, c => '\\' + c) +
-        '"' + (datatype ? '^^' + datatype : '')
-    }
+const dataFactory = {
+  triple: (s, p, o) => [s, p, o],
+  namedNode: (uri) => '<' + uri + '>',
+  blankNode: (name) => '_:' + name,
+  literal: (value, datatype) =>
+    '"' + String(value).replace(/["\\\r\n]/, c => '\\' + c) +
+    '"' + (datatype ? '^^' + datatype : '')
+}
 
-    const mapper = beacon.RDFMapper(dataFactory)
+test('RDFMapper', done => {
+  var metaTriples
+  var linkTriples = []
+  var meta
 
-    let metaTriples = [...mapper.metaTriples(dump.metaFields)]
+  const mapper = RDFMapper(dataFactory)
+
+  createReadStream('test/rdf-example.txt')
+  .pipe(Parser())
+  .on('meta', m => {
+    meta = m
+    metaTriples = [...mapper.metaTriples(m)]
+  })
+  .on('data', link =>
+    linkTriples.push(...mapper.linkTriples(link, meta.ANNOTATION))
+  )
+  .on('end', () => {
     expect(metaTriples).toEqual([
       [
         '_:dump',
@@ -79,11 +91,40 @@ test('RDFMapper', () => {
       ]
     ])
 
-    let linkTriples = [...mapper.linkTriples(dump.links(), dump.metaFields.ANNOTATION)]
-
     expect(linkTriples).toEqual([
        ['<http://example.org/abc>', '<http://xmlns.com/foaf/0.1/primaryTopic>', '<http://example.com/xy>'],
        ['<http://example.com/xy>', '<http://purl.org/dc/terms/extent>', '"12"']
     ])
+
+    done()
   })
+})
+
+test('RDFMapper.countTriples', () => {
+  const mapper = RDFMapper(dataFactory)
+
+  function countTriples (items, triples) {
+    return [
+      [
+        '_:dump',
+        '<http://www.w3.org/ns/hydra/core#totalItems>',
+        '"' + items + '"^^<http://www.w3.org/2001/XMLSchema#integer>'
+      ], [
+        '_:dump',
+        '<http://rdfs.org/ns/void#entities>',
+        '"' + items + '"^^<http://www.w3.org/2001/XMLSchema#integer>'
+      ], [
+        '_:dump',
+        '<http://rdfs.org/ns/void#triples>',
+        '"' + triples + '"^^<http://www.w3.org/2001/XMLSchema#integer>'
+      ]
+    ]
+  }
+
+  expect([...mapper.countTriples()]).toEqual(countTriples(0, 0))
+
+  var link = Link(['http://example.com/documents/23', '', 'http://example.com/people/alice.about'])
+  ;mapper.linkTriples(link).next()
+
+  expect([...mapper.countTriples()]).toEqual(countTriples(1, 1))
 })

@@ -1,6 +1,6 @@
 {
   "name": "beacon-links",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "BEACON link dump format implementation in JavaScript",
   "author": "Jakob Voß",
   "main": "index.js",
@@ -14,16 +14,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gbv/beacon-links.git"
+    "url": "git+https://github.com/gbv/beacon-js.git"
   },
-  "homepage": "https://github.com/gbv/beacon-links#readme",
+  "homepage": "https://github.com/gbv/beacon-js#readme",
   "keywords": [
     "links",
     "RDF"
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/gbv/beacon-links/issues"
+    "url": "https://github.com/gbv/beacon-js/issues"
   },
   "engines": {
     "node": ">= 6.5.0"

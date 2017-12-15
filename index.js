@@ -1,20 +1,24 @@
-const Writer = require('./lib/writer')
+const Parser = require('./lib/parser')
+const Serializer = require('./lib/serializer')
 const characters = require('./lib/characters')
-const links = require('./lib/links')
+const Link = require('./lib/link')
 const { metaFieldValue, MetaFields } = require('./lib/metafields')
 const uriPattern = require('./lib/uripattern')
 const RDFMapper = require('./lib/rdfmapper')
-const RDFSerializer = require('./lib/rdfserializer')
 
 module.exports = {
+  Link,
   MetaFields,
-  Writer,
+
   replaceDisallowedChars: characters.replaceDisallowedChars,
   whitespaceNormalize: characters.whitespaceNormalize,
-  parser: require('./lib/parser.js'),
-  constructLink: links.constructLink,
-  metaFieldValue,
-  uriPattern,
+
+  Parser,
+  parse: (stream, options) => Parser(options).parse(stream),
+
+  Serializer,
   RDFMapper,
-  RDFSerializer
+
+  metaFieldValue,
+  uriPattern
 }
