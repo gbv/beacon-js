@@ -16,7 +16,7 @@ const [opt, file] = (args => {
     '-b, --brief': 'omit meta fields having default values',
     '-l, --links': 'only write links',
     '-m, --meta': 'only read and write meta fields',
-    '-f, --format <format>': 'output format (txt|ndjson|rdf)',
+    '-f, --format <format>': 'output format (txt|json|rdf)',
     '-c, --color': 'enable color output'
   }
 
@@ -76,8 +76,24 @@ const stream = (file === '-' ? process.stdin : fs.createReadStream(file))
     process.exit(1)
   })
 
-if (opt.format === 'ndjson') {
-  stream.on('data', link => stdout.write(JSON.stringify(link) + '\n'))
+if (opt.format === 'json') {
+  if (opt.meta) {
+    stream.on('meta', meta => {
+      meta = Object.keys(meta).reduce(
+        (o, field) => {
+          if (meta[field] !== '') {
+            if (!opt.brief ||
+            String(meta[field]) !== String(beacon.metaFieldValue(field))) {
+              o[field] = String(meta[field])
+            }
+          }
+          return o
+        }, {})
+      stdout.write(JSON.stringify(meta, null, 4) + '\n')
+    })
+  } else {
+    stream.on('data', link => stdout.write(JSON.stringify(link) + '\n'))
+  }
 } else if (opt.format === 'rdf') {
   const rdfSerializer = RDFData(highlight)
   const rdfmapper = beacon.RDFMapper(rdfSerializer)
