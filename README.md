@@ -1,49 +1,79 @@
 # beacon-links.js
 
-> JavaScript implementation of [BEACON link dump format](https://gbv.github.io/beaconspec/)
+[![npm package](https://img.shields.io/npm/v/beacon-links.svg?style=flat-square)](https://www.npmjs.com/package/beacon-links)
+[![Build Status](https://img.shields.io/travis/gbv/beacon-js.svg?style=flat-square)](https://travis-ci.org/gbv/beacon-js)
+[![Coverage](https://img.shields.io/coveralls/gbv/beacon-js/master.svg?style=flat-square)](https://coveralls.io/r/gbv/beacon-js)
+[![License](https://img.shields.io/npm/l/beacon-links.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-*EXPERIMENTAL PRE-RELEASE*
-
-[![npm package](https://img.shields.io/npm/v/beacon-links.svg)](https://www.npmjs.com/package/beaconlinks)
-[![Build Status](https://travis-ci.org/gbv/beacon-js.svg)](https://travis-ci.org/gbv/beacon-js)
-[![Coverage](https://img.shields.io/coveralls/gbv/beacon-js/master.svg)](https://coveralls.io/r/gbv/beacon-js)
-[![License](https://img.shields.io/npm/l/beacon-links.svg)](https://opensource.org/licenses/MIT)
+JavaScript implementation of [BEACON link dump format](https://gbv.github.io/beaconspec/).
 
 ## Installation
 
-Install the latest [npm](https://npmjs.org/) release with
+Requires at least NodeJS 6.4. Install latest [npm](https://npmjs.org/) release with
 
-    npm install beacon-links
+    $ npm install beacon-links
 
-Requires at least Node 6.4
+## Background
+
+[BEACON](https://gbv.github.io/beaconspec/) is a data interchange format for large numbers of uniform links. A BEACON link dump consists of a set of links and a set of describing metadata fields. Link dumps can be serialized in a condense text format that utilizes common patterns for abbreviation. Link dumps can further be mapped to and from RDF with minor limitations. The most popular use case of BEACON link dumps is collection of resources related to some known entities.
+
+To give an example, this link dump in BEACON format consists two links from authors, identified by their Integrated Authority File (GND) URI, to reviews in the German literary magazine "Perlentaucher":
+
+    #PREFIX: http://d-nb.info/gnd/
+    #TARGET: http://www.perlentaucher.de/autor/
+    #TARGETSET: http://www.wikidata.org/entity/Q2071388
+    #NAME: Perlentaucher
+    #TIMESTAMP: 2017-11-24
+    
+    118757261|Dylan Thomas|dylan-thomas.html
+    128915706|Shirin Ebadi|shirin-ebadi.html
+
+The links can be mapped to RDF triples:
+
+  <http://d-nb.info/gnd/118757261> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.perlentaucher.de/autor/dylan-thomas.html> .
+  <http://d-nb.info/gnd/128915706> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.perlentaucher.de/autor/shirin-ebadi.html> .
+
+This package and its command line client provide methods to parse, serialize and map BEACON link dumps.
 
 ## Usage
 
-### As library
-
-~~~
-const beacon = require('beacon-links')
-~~~
-
-See [API description](#api) below for details.
-
 ### Command line client
 
-This packages includes a simple command-line client to parse, serialize, and map BEACON link dumps.
+    $ beaconlinks -h
 
-~~~shell
-$ beaconlinks -h                    # show help
-$ beaconlinks beacon.txt            # read and write BEACON format
-$ beaconlinks < beacon.txt
-$ beaconlinks -m beacon.txt         # only read and write meta lines
-$ beaconlinks -f rdf beacon.txt     # map to RDF (incomplete by now)
+    Usage: beaconlinks [options] [file]
+
+    Parse and serialize BEACON link dumps.
+
+    Options:
+
+      -h, --help             show usage information
+      -b, --brief            omit meta fields having default values
+      -l, --links            only write links
+      -m, --meta             only read and write meta fields
+      -f, --format <format>  output format (txt|json|rdf)
+      -c, --color            enable color output
+      -C, --no-color         disable color output
+
+Try for instance `beaconlinks -f rdf test/perlentaucher.txt` to map the sample link dump to RDF.
+
+### API
+
+~~~javascript
+const beacon = require('beacon-links')
+
+var meta = beacon.MetaFields({
+  PREFIX: 'http://d-nb.info/gnd/',
+  TARGET: 'http://www.perlentaucher.de/autor/'
+})
+
+var tokens = ['118757261', 'Dylan Thomas', 'dylan-thomas.html']
+var link = beacon.Link(tokens, meta)
 ~~~
 
-## API
+#### LinkDump
 
-### LinkDump
-
-[BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#introduction) are implemented as object with a `meta` property for the [meta fields](#metafields) and a `links` property with an array of [Link](#link):
+[BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#introduction) are implemented as object with a `meta` property for the [meta fields](#metafields) and a `links` property with an array of [Link](#link) objects:
 
 ~~~
 interface LinkDump {
@@ -52,9 +82,9 @@ interface LinkDump {
 }
 ~~~
 
-Link dump objects are not required when processing link dumps as streams.
+However, LinkDump objects are not required when processing link dumps as streams.
 
-### MetaFields
+#### MetaFields
 
 [BEACON meta fields](http://gbv.github.io/beaconspec/beacon.html#meta-fields) are implemented as object with properties for each meta field:
 
@@ -76,6 +106,8 @@ interface MetaFields {
   attribute URI TARGETSET;
   attribute string NAME;
   attribute string INSTITUTION;
+
+  string simplify(bool brief);
 }
 ~~~
 
@@ -86,7 +118,9 @@ meta = beacon.MetaFields({INSTITUTION: 'ACME'})
 console.log(meta.RELATION) // default value "http://www.w3.org/2000/01/rdf-schema#seeAlso"
 ~~~
 
-### Link
+Method `simplify` returns a plain object with flat field values, optionally omitting default values.
+
+#### Link
 
 [BEACON links](http://gbv.github.io/beaconspec/beacon.html#links) are implemented as object with four properties:
 
@@ -101,16 +135,16 @@ interface Link {
 
 Function `Link` can be used for [link construction](http://gbv.github.io/beaconspec/beacon.html#link-construction) from meta fields and link tokens:
 
-~~~
+~~~javascript
 meta = MetaFields({
   PREFIX: 'http://example.org/',
   TARGET: 'http://example.com/',
- MESSAGE: 'Hello World!'
+  MESSAGE: 'Hello World!'
 }(
 link = Link(['foo'], meta)
 ~~~
 
-### Parser
+#### Parser
 
 Parsing [BEACON format](http://gbv.github.io/beaconspec/beacon.html#beacon-format) is implemented as stream transformer. A parser emits
 
@@ -136,7 +170,7 @@ beacon.parse(fs.createReadStream('beacon-file.txt'))
   .catch(error => ...)
 ~~~
 
-### Serializer
+#### Serializer
 
 Implements serialization of link dumps in [BEACON format](http://gbv.github.io/beaconspec/beacon.html#beacon-format)
 
@@ -161,11 +195,11 @@ Serialization can be configured with:
     * `annotation` (annotation token)
     * `target` (target token)
 
-### Error
+#### Error
 
 An `Error` object is extended by properties `number` and `line` for parsing errors.
 
-### URIPattern
+#### URIPattern
 
 Implements [BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#uri-patterns)
 
@@ -178,7 +212,7 @@ interface URIPattern {
 }
 ~~~
 
-### RDFMapper
+#### RDFMapper
 
 ~~~
 interface RDFMapper {

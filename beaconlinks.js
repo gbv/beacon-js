@@ -1,12 +1,7 @@
 #!/usr/bin/env node
 
-/**
- * Read BEACON from file or standard input.
- */
-
 const beacon = require('./index')
 const fs = require('fs')
-const RDFData = require('./lib/rdfdatafactory')
 const stdout = process.stdout
 
 // yet another getopt-alike (to avoid dependencies)
@@ -17,7 +12,8 @@ const [opt, file] = (args => {
     '-l, --links': 'only write links',
     '-m, --meta': 'only read and write meta fields',
     '-f, --format <format>': 'output format (txt|json|rdf)',
-    '-c, --color': 'enable color output'
+    '-c, --color': 'enable color output',
+    '-C, --no-color': 'disable color output'
   }
 
   var opt = {}
@@ -40,6 +36,8 @@ const [opt, file] = (args => {
   }
   while (args.length) file = args.shift()
 
+  opt.color = !opt['no-color'] && (opt.color || stdout.isTTY)
+
   if (opt.help) {
     stdout.write(
 `Usage: beaconlinks [options] [file]
@@ -58,11 +56,17 @@ Options:
   return [opt, file]
 })(process.argv.slice(2))
 
+// just exit if stdout is closed
+stdout.on('error', process.exit)
+
+// subset of chalk
 const highlight = opt.color ? {
   delimiter: s => '\u001b[2m' + s + '\u001b[22m',
   field: s => '\u001b[1m' + s + '\u001b[22m',
   source: s => '\u001b[34m' + s + '\u001b[39m',
-  target: s => '\u001b[36m' + s + '\u001b[39m'
+  target: s => '\u001b[36m' + s + '\u001b[39m',
+  literal: s => '\u001b[33m' + s + '\u001b[39m',
+  iri: s => '\u001b[32m' + s + '\u001b[39m'
 } : {}
 
 const stream = (file === '-' ? process.stdin : fs.createReadStream(file))
@@ -79,23 +83,33 @@ const stream = (file === '-' ? process.stdin : fs.createReadStream(file))
 if (opt.format === 'json') {
   if (opt.meta) {
     stream.on('meta', meta => {
-      meta = Object.keys(meta).reduce(
-        (o, field) => {
-          if (meta[field] !== '') {
-            if (!opt.brief ||
-            String(meta[field]) !== String(beacon.metaFieldValue(field))) {
-              o[field] = String(meta[field])
-            }
-          }
-          return o
-        }, {})
-      stdout.write(JSON.stringify(meta, null, 4) + '\n')
+      stdout.write(JSON.stringify(meta.simplify(opt.brief), null, 4) + '\n')
     })
   } else {
     stream.on('data', link => stdout.write(JSON.stringify(link) + '\n'))
   }
 } else if (opt.format === 'rdf') {
-  const rdfSerializer = RDFData(highlight)
+  // DataFactory that serializes RDF triples with optional highlighting
+  const delimiter = highlight.delimiter ? highlight.delimiter : s => s
+  const literal = highlight.literal ? highlight.literal : s => s
+  const iri = highlight.iri ? highlight.iri : s => s
+  const rdfSerializer = {
+    triple: (subject, predicate, object) => {
+      return [subject, predicate, object].join(' ') + delimiter(' .') + '\n'
+    },
+    namedNode: (value) => {
+      return delimiter('<') + iri(value) + delimiter('>')
+    },
+    blankNode: (name) => {
+      return delimiter('_:') + name
+    },
+    literal: (value, datatype) => {
+      return literal('"' +
+        String(value).replace(/["\\\r\n]/, c => '\\' + c) +
+        '"') + (datatype ? delimiter('^^') + datatype : '')
+    }
+  }
+
   const rdfmapper = beacon.RDFMapper(rdfSerializer)
 
   var annotation

@@ -1,0 +1,8 @@
+#PREFIX: http://d-nb.info/gnd/
+#TARGET: http://www.perlentaucher.de/autor/
+#TARGETSET: http://www.wikidata.org/entity/Q2071388
+#NAME: Perlentaucher
+#TIMESTAMP: 2017-11-24
+
+118757261|Dylan Thomas|dylan-thomas.html
+128915706|Shirin Ebadi|shirin-ebadi.html

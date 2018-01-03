@@ -62,11 +62,18 @@ test('metaFields', () => {
     NAME: 'alice| bob',
     FOO: 'bar'
   })
-  expect(meta).toBeInstanceOf(MetaFields)
 
   expect(String(meta.PREFIX)).toBe('{+ID}')
   expect(String(meta.TARGET)).toBe('{+ID}')
   expect(meta.RELATION).toBe('http://www.w3.org/2000/01/rdf-schema#seeAlso')
   expect(meta.NAME).toBe('alice| bob')
   expect(meta.FOO).toBe(undefined)
+
+  var flat = meta.simplify()
+  expect(flat.PREFIX).toBe('{+ID}')
+  expect(flat.NAME).toBe('alice| bob')
+
+  flat = meta.simplify(true)
+  expect(flat.PREFIX).toBe(undefined)
+  expect(flat.NAME).toBe('alice| bob')
 })
