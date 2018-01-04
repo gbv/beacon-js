@@ -1,9 +1,10 @@
 const Parser = require('./lib/parser')
-const Serializer = require('./lib/serializer')
+const Writer = require('./lib/writer')
+
 const characters = require('./lib/characters')
 const Link = require('./lib/link')
 const { metaFieldValue, MetaFields } = require('./lib/metafields')
-const uriPattern = require('./lib/uripattern')
+const URIPattern = require('./lib/uripattern')
 const RDFMapper = require('./lib/rdfmapper')
 const TokenIndex = require('./lib/tokenindex')
 
@@ -16,12 +17,11 @@ module.exports = {
 
   Parser,
   parse: (stream, options) => Parser(options).parse(stream),
-
-  Serializer,
+  Writer,
   RDFMapper,
 
   metaFieldValue,
-  uriPattern,
+  URIPattern,
 
-  TokenIndex,
+  TokenIndex
 }

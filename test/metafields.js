@@ -1,13 +1,13 @@
-const { metaFieldValue, MetaFields, uriPattern } = require('../index')
+const { metaFieldValue, MetaFields, URIPattern } = require('../index')
 
 const tests = {
   PREFIX: {
-    '': uriPattern('{+ID}'),
-    ' {ID} ': uriPattern('{ID}'),
-    'http://example.org/ ': uriPattern('http://example.org/{ID}'),
+    '': URIPattern('{+ID}'),
+    ' {ID} ': URIPattern('{ID}'),
+    'http://example.org/ ': URIPattern('http://example.org/{ID}'),
     '{FOO}': null,
     '{ID}{?ID}': null,
-    '{ID}{+ID}': uriPattern('{ID}{+ID}')
+    '{ID}{+ID}': URIPattern('{ID}{+ID}')
   },
   MESSAGE: {
     '': '',
@@ -19,7 +19,7 @@ const tests = {
     'x': null,
     'x:y': 'x:y',
     '{ID': null,
-    '{ID}': uriPattern('{ID}')
+    '{ID}': URIPattern('{ID}')
   },
   TIMESTAMP: {
     '': '',
@@ -50,7 +50,7 @@ test('metaFieldValue', () => {
       let got = metaFieldValue(field, value)
       let want = tests[field][value]
       expect(String(got)).toBe(String(tests[field][value]))
-      if (typeof want === 'object') { // uriPattern
+      if (typeof want === 'object') { // URIPattern
         expect(typeof got).toBe('object')
       }
     }

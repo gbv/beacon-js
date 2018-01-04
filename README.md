@@ -170,20 +170,22 @@ beacon.parse(fs.createReadStream('beacon-file.txt'))
   .catch(error => ...)
 ~~~
 
-#### Serializer
+#### Writer
 
-Implements serialization of link dumps in [BEACON format](http://gbv.github.io/beaconspec/beacon.html#beacon-format)
+Link dumps can be written in [BEACON format](http://gbv.github.io/beaconspec/beacon.html#beacon-format) to a string or to a stream:
 
 ~~~javascript
-const serializer = beacon.Serializer()
-for (let line of serializer.metaLines(metaFields)) {
-  stream.write(line)
-}
+writer = beacon.Writer()
+writer.writeMeta(metaFields)
+writer.writeTokens(source, annotation, target)
+process.stdout.write(writer.output)
 
-stream.write(serializer.linkLine(source, annotation, target))
+writer = beacon.Writer(process.stdout)
+writer.writeMeta(metaFields)
+writer.writeTokens(source, annotation, target)
 ~~~
 
-Serialization can be configured with:
+Writers can be configured with:
 
 * `omitDefaults` to omit meta fields with default values (false by default)
 * `omitEmptyLine` to omit the empty line after meta fields

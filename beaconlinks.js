@@ -141,23 +141,17 @@ if (opt.format === 'json') {
     })
   }
 } else {
-  const serializer = beacon.Serializer({
+  const writer = beacon.Writer(stdout, {
     omitDefaults: opt.brief,
     omitEmptyLine: opt.meta,
     highlight: highlight
   })
 
   if (!opt.links) {
-    stream.on('meta', meta => {
-      for (let line of serializer.metaLines(meta)) {
-        stdout.write(line)
-      }
-    })
+    stream.on('meta', meta => writer.writeMeta(meta))
   }
 
   if (!opt.meta) {
-    stream.on('token', tokens => {
-      stdout.write(serializer.linkLine(...tokens))
-    })
+    stream.on('token', tokens => writer.writeTokens(...tokens))
   }
 }
