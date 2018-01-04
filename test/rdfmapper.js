@@ -1,4 +1,4 @@
-const { Parser, RDFMapper, Link } = require('../index')
+const { Parser, RDFMapper, MetaFields } = require('../index')
 const { createReadStream } = require('fs')
 
 const dataFactory = {
@@ -123,7 +123,9 @@ test('RDFMapper.countTriples', () => {
 
   expect([...mapper.countTriples()]).toEqual(countTriples(0, 0))
 
-  var link = Link(['http://example.com/documents/23', '', 'http://example.com/people/alice.about'])
+  var link = MetaFields().constructLink(
+      'http://example.com/documents/23', '', 'http://example.com/people/alice.about'
+  )
   ;mapper.linkTriples(link).next()
 
   expect([...mapper.countTriples()]).toEqual(countTriples(1, 1))

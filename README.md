@@ -67,8 +67,7 @@ var meta = beacon.MetaFields({
   TARGET: 'http://www.perlentaucher.de/autor/'
 })
 
-var tokens = ['118757261', 'Dylan Thomas', 'dylan-thomas.html']
-var link = beacon.Link(tokens, meta)
+var link = meta.constructLink('118757261', 'Dylan Thomas', 'dylan-thomas.html')
 ~~~
 
 #### LinkDump
@@ -133,15 +132,15 @@ interface Link {
 }
 ~~~
 
-Function `Link` can be used for [link construction](http://gbv.github.io/beaconspec/beacon.html#link-construction) from meta fields and link tokens:
+Links can [be constructed](http://gbv.github.io/beaconspec/beacon.html#link-construction) from meta fields and link tokens:
 
 ~~~javascript
 meta = MetaFields({
   PREFIX: 'http://example.org/',
   TARGET: 'http://example.com/',
   MESSAGE: 'Hello World!'
-}(
-link = Link(['foo'], meta)
+})
+link = meta.constructLink('foo')
 ~~~
 
 #### Parser

@@ -1,16 +1,21 @@
-const { Link, MetaFields } = require('../index')
+const { MetaFields } = require('../index')
 
-test('Link', () => {
+test('constructLink/constructTokens', () => {
   var meta = MetaFields({ MESSAGE: 'Hello World!' })
 
-  expect(Link(['foo'], meta)).toEqual({
+  function check (tokens, link) {
+    expect(meta.constructLink(...tokens)).toEqual(link)
+    expect(meta.constructTokens(link)).toEqual(tokens)
+  }
+
+  check(['foo'], {
     source: 'foo',
     target: 'foo',
     relation: 'http://www.w3.org/2000/01/rdf-schema#seeAlso',
     annotation: 'Hello World!'
   })
 
-  expect(Link(['foo', '', 'bar'], meta)).toEqual({
+  check(['foo', undefined, 'bar'], {
     source: 'foo',
     target: 'bar',
     relation: 'http://www.w3.org/2000/01/rdf-schema#seeAlso',
@@ -19,14 +24,14 @@ test('Link', () => {
 
   meta = MetaFields({RELATION: '{+ID}'})
 
-  expect(Link([
+  check([
     'foo', 'http://xmlns.com/foaf/0.1/isPrimaryTopicOf', 'bar'
-  ], meta)).toEqual({
+  ], {
     source: 'foo',
     target: 'bar',
     relation: 'http://xmlns.com/foaf/0.1/isPrimaryTopicOf',
     annotation: ''
   })
 
-  expect(Link(['foo', '', 'bar'], meta)).toBe(undefined)
+  expect(meta.constructLink('foo', '', 'bar')).toBe(undefined)
 })
