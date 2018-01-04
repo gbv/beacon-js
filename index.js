@@ -5,6 +5,7 @@ const Link = require('./lib/link')
 const { metaFieldValue, MetaFields } = require('./lib/metafields')
 const uriPattern = require('./lib/uripattern')
 const RDFMapper = require('./lib/rdfmapper')
+const TokenIndex = require('./lib/tokenindex')
 
 module.exports = {
   Link,
@@ -20,5 +21,7 @@ module.exports = {
   RDFMapper,
 
   metaFieldValue,
-  uriPattern
+  uriPattern,
+
+  TokenIndex,
 }
