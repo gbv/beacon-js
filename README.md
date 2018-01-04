@@ -209,8 +209,11 @@ interface URIPattern {
   attribute string uriSpace;
   attribute string uriRegexPattern;  // not implemented yet
   string toString();
+  string match(string);
 }
 ~~~
+
+The `match` method can be used to abbreviate a URI to a token.
 
 #### RDFMapper
 
