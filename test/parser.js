@@ -1,5 +1,5 @@
-const beacon = require('../index')
-const { createReadStream } = require('fs')
+const { Parser } = require('../index')
+const { createReadStream, readFileSync } = require('fs')
 
 function checkMeta (meta) {
   expect(meta.NAME).toBe('Test')
@@ -21,9 +21,9 @@ test('Parser', done => {
   var meta
 
   createReadStream('test/example.txt')
-  .pipe(beacon.Parser())
+  .pipe(Parser())
   .on('meta', m => { meta = m })
-  .on('token', t => tokens.push(t))
+  .on('tokens', t => tokens.push(t))
   .on('data', l => links.push(l))
   .on('end', () => {
     checkMeta(meta)
@@ -33,8 +33,16 @@ test('Parser', done => {
   })
 })
 
-test('parse', () => {
-  return beacon.parse(createReadStream('test/example.txt'))
+test('parse stream', () => {
+  return Parser().parse(createReadStream('test/example.txt'))
+    .then(dump => {
+      checkMeta(dump.meta)
+      checkLinks(dump.links)
+    })
+})
+
+test('parse string', () => {
+  return Parser().parse(readFileSync('test/example.txt', 'utf8'))
     .then(dump => {
       checkMeta(dump.meta)
       checkLinks(dump.links)
@@ -42,9 +50,19 @@ test('parse', () => {
 })
 
 test('parse error', () => {
-  return beacon.parse(createReadStream('test/malformed.txt'))
+  return Parser().parse(createReadStream('test/malformed.txt'))
     .catch(e => {
       expect(e).toBeTruthy()
-      // TODO: test Error properties
+      expect(e.message).toBe('invalid meta line')
+      expect(e.line).toBe('# bla')
+      expect(e.number).toBe(2)
+    })
+})
+
+test('parse error (2)', () => {
+  return Parser().parse(true)
+    .catch(e => {
+      expect(e).toBeTruthy()
+      expect(e.message).toBe('input not readable')
     })
 })

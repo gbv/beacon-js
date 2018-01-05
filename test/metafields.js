@@ -69,11 +69,11 @@ test('metaFields', () => {
   expect(meta.NAME).toBe('alice| bob')
   expect(meta.FOO).toBe(undefined)
 
-  var flat = meta.simplify()
+  var flat = meta.getValues()
   expect(flat.PREFIX).toBe('{+ID}')
   expect(flat.NAME).toBe('alice| bob')
 
-  flat = meta.simplify(true)
+  flat = meta.getValues(true)
   expect(flat.PREFIX).toBe(undefined)
   expect(flat.NAME).toBe('alice| bob')
 })

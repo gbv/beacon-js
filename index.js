@@ -13,7 +13,6 @@ module.exports = {
   whitespaceNormalize: characters.whitespaceNormalize,
 
   Parser,
-  parse: (stream, options) => Parser(options).parse(stream),
   Writer,
   RDFMapper,
 

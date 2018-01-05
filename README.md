@@ -5,19 +5,25 @@
 [![Coverage](https://img.shields.io/coveralls/gbv/beacon-js/master.svg?style=flat-square)](https://coveralls.io/r/gbv/beacon-js)
 [![License](https://img.shields.io/npm/l/beacon-links.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-JavaScript implementation of [BEACON link dump format](https://gbv.github.io/beaconspec/).
+JavaScript implementation of [BEACON link dump format](https://gbv.github.io/beaconspec/). The `beacon-links` package provides:
+
+* **[Parsing](#parsing)** BEACON link dump format
+* **[Writing](#writing)** BEACON link dump format
+* **[RDF Mapping](#rdf-mapping)** of link dumps
+* **[Storage](#storage)** of link dumps in memory
+* **[command line client](#command-line-client)**
 
 ## Installation
 
-Requires at least NodeJS 6.4. Install latest [npm](https://npmjs.org/) release with
+Requires at least node.js 6.4. Install the [npm package](https://npmjs.org/package/beacon-links):
 
     $ npm install beacon-links
 
-## Background
+## Introduction
 
-[BEACON](https://gbv.github.io/beaconspec/) is a data interchange format for large numbers of uniform links. A BEACON link dump consists of a set of links and a set of describing metadata fields. Link dumps can be serialized in a condense text format that utilizes common patterns for abbreviation. Link dumps can further be mapped to and from RDF with minor limitations. The most popular use case of BEACON link dumps is collection of resources related to some known entities.
+[BEACON](https://gbv.github.io/beaconspec/) is a data interchange format for large numbers of uniform links. A **BEACON link dump** consists of a set of links and a set of describing metadata fields. Link dumps can be serialized in a condense text format that utilizes common patterns for abbreviation. Link dumps can further be mapped to and from RDF with minor limitations. The most popular use case of BEACON link dumps is collection of resources related to entities identified in authority files.
 
-To give an example, this link dump in BEACON format consists two links from authors, identified by their Integrated Authority File (GND) URI, to reviews in the German literary magazine "Perlentaucher":
+For example this link dump in BEACON format consists two links from authors, identified by their Integrated Authority File URI (GND), to reviews in the German literary magazine "Perlentaucher":
 
     #PREFIX: http://d-nb.info/gnd/
     #TARGET: http://www.perlentaucher.de/autor/
@@ -30,14 +36,26 @@ To give an example, this link dump in BEACON format consists two links from auth
 
 The links can be mapped to RDF triples:
 
-  <http://d-nb.info/gnd/118757261> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.perlentaucher.de/autor/dylan-thomas.html> .
-  <http://d-nb.info/gnd/128915706> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.perlentaucher.de/autor/shirin-ebadi.html> .
+    <http://d-nb.info/gnd/118757261> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.perlentaucher.de/autor/dylan-thomas.html> .
+    <http://d-nb.info/gnd/128915706> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.perlentaucher.de/autor/shirin-ebadi.html> .
 
-This package and its command line client provide methods to parse, serialize and map BEACON link dumps.
+The `beacon-links` package and its [command line client](#command-line-client) provide methods to parse, serialize and map BEACON link dumps:
 
-## Usage
+~~~javascript
+const { MetaFields } = require('beacon-links')
 
-### Command line client
+var meta = MetaFields({
+  PREFIX: 'http://d-nb.info/gnd/',
+  TARGET: 'http://www.perlentaucher.de/autor/',
+  TARGETSET: 'http://www.wikidata.org/entity/Q2071388',
+  NAME: 'Perlentaucher',
+  TIMESTAMP: '2017-11-24'
+})
+
+var link = meta.constructLink('118757261', 'Dylan Thomas', 'dylan-thomas.html')
+~~~
+
+## Command line client
 
     $ beaconlinks -h
 
@@ -57,33 +75,96 @@ This package and its command line client provide methods to parse, serialize and
 
 Try for instance `beaconlinks -f rdf test/perlentaucher.txt` to map the sample link dump to RDF.
 
-### API
+## Parsing
+
+A `Parser` reads [BEACON format] from strings or [streams]. Method `parse` returns a with the whole link dump on success or an [Error] otherwise. The link dump is an object with properties `meta` (a [MetaFields]) and `links` (an array of [Link]). Parsing errors come with properties `number` for the line number and `line` for the faulty line.
 
 ~~~javascript
-const beacon = require('beacon-links')
+var parser = beacon.Parser()
+var input = fs.createReadStream('beacon-file.txt')
 
-var meta = beacon.MetaFields({
-  PREFIX: 'http://d-nb.info/gnd/',
-  TARGET: 'http://www.perlentaucher.de/autor/'
-})
-
-var link = meta.constructLink('118757261', 'Dylan Thomas', 'dylan-thomas.html')
+parser.parse(input)
+  .then(dump => {
+    console.log('Read %d links', dump.links.length)
+  ))
+  .catch(error => {
+    console.error('%s at line %d: %s', error.message, error.number, error.line)
+  })
 ~~~
 
-#### LinkDump
+For more details and large data sets the parser should better be used on [streams]. Parsing emits:
 
-[BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#introduction) are implemented as object with a `meta` property for the [meta fields](#metafields) and a `links` property with an array of [Link](#link) objects:
+* a `meta` event for all meta fields combined (a [MetaFields])
+* a `tokens` event for each non-empty link line (an array of tokens)
+* a `data` event for each constructed link (a [Link])
+* a `error` event on parsing errors
+
+~~~javascript
+var parser = beacon.Parser()
+fs.createReadStream('beacon-file.txt')
+  .pipe(parser)
+  .on('meta', metaFields => ... )
+  .on('tokens', tokens => ... )
+  .on('data', link => ... )
+  .on('error', error => ... )
+~~~
+
+## Writing
+
+A `Writer` writes [BEACON format] to strings:
+
+~~~javascript
+writer = beacon.Writer(options)
+writer.writeMeta(metaFields)
+writer.writeTokens(source, annotation, target)
+process.stdout.write(writer.output)
+~~~
+
+or to [streams]:
+
+~~~javascript
+writer = beacon.Writer(process.stdout, options)
+writer.writeMeta(metaFields)
+writer.writeTokens(source, annotation, target)
+~~~
+
+Writer options include:
+
+* `omitDefaults` to omit meta fields with default values (false by default)
+* `omitEmptyLine` to omit the empty line after meta fields
+* `highlight`: optional object with functions to highlight
+    * `delimiter` (delimiter characters)
+    * `field` (meta field name)
+    * `value` (meta field value)
+    * `source` (source token)
+    * `annotation` (annotation token)
+    * `target` (target token)
+
+## RDF Mapping
+
+BEACON link dumps can be [mapped to RDF](https://gbv.github.io/beaconspec/beacon.html#mapping-to-rdf) with `RDFMapper`. The constructor can be configured with an instance of the [JavaScript RDF Interfaces DataFactory interface]. By default [N3 triples representation](https://github.com/RubenVerborgh/N3.js/blob/master/README.md#triple-representation) is used.
 
 ~~~
-interface LinkDump {
-  attribute MetaFields meta;
-  attribute Link[] links;
+interface RDFMapper {
+  Object *metaTriples(MetaFields meta);
+  Object *linkTriples(Link link, String annotation);
+  Object *countTriples();
+  Object *allTriples(MetaFields meta, Link* links);
 }
 ~~~
 
-However, LinkDump objects are not required when processing link dumps as streams.
+~~~javascript
+const { RDFMapper } = require('beacon-links')
 
-#### MetaFields
+var mapper = RDFMapper(dataFactory)
+for (let triple of mapper.allTriples(linkDump)) {
+  // ...
+}
+~~~
+
+## API
+
+### MetaFields
 
 [BEACON meta fields](http://gbv.github.io/beaconspec/beacon.html#meta-fields) are implemented as object with properties for each meta field:
 
@@ -106,20 +187,23 @@ interface MetaFields {
   attribute string NAME;
   attribute string INSTITUTION;
 
-  string simplify(bool brief);
+  string getValues(bool brief);
+
+  Link constructLink(string source, string annotation, string target);
+  array constructTokens(Link link);
 }
 ~~~
 
-Property values `PREFIX`, `TARGET`, and `RELATION` can be [URIPattern](#uripattern) objects.  URIs and URLs are stored as plain strings. Additional constraints apply on property TIMESTAMP and UPDATE. A new MetaFields object can be created with function `MetaFields`:
+Property values `PREFIX`, `TARGET`, and `RELATION` can be [URIPattern](#uripattern) objects.  URIs and URLs are stored as plain strings. Additional constraints apply on property TIMESTAMP and UPDATE. Empty fields are set to the empty string. A new MetaFields object can be created with function `MetaFields`:
 
 ~~~javascript
 meta = beacon.MetaFields({INSTITUTION: 'ACME'})
 console.log(meta.RELATION) // default value "http://www.w3.org/2000/01/rdf-schema#seeAlso"
 ~~~
 
-Method `simplify` returns a plain object with flat field values, optionally omitting default values.
+Method `getValues` returns a plain object with flat field values, optionally omitting default values.
 
-#### Link
+### Link
 
 [BEACON links](http://gbv.github.io/beaconspec/beacon.html#links) are implemented as object with four properties:
 
@@ -143,64 +227,7 @@ meta = MetaFields({
 link = meta.constructLink('foo')
 ~~~
 
-#### Parser
-
-Parsing [BEACON format](http://gbv.github.io/beaconspec/beacon.html#beacon-format) is implemented as stream transformer. A parser emits
-
-* a `meta` event for all meta fields combined (with [MetaField](#MetaField) interface)
-* a `token` event for each non-empty link line (with an array of tokens)
-* a `data` event for each constructed link (with [Link](#Link) interface)
-* a `error` event on parsing errors (with [Error](#Error) interface)
-
-~~~javascript
-fs.createReadStream('beacon-file.txt')
-  .pipe(beacon.Parser())
-  .on('meta', metaFields => ... )
-  .on('token', tokens => ... )
-  .on('data', link => ... )
-  .on('error', error => ... )
-~~~
-
-The `parse` method can alternatively be used to parse the whole stream and return a promise with a [LinkDump](#linkdump) on success:
-
-~~~javascript
-beacon.parse(fs.createReadStream('beacon-file.txt'))
-  .then(dump => ...)
-  .catch(error => ...)
-~~~
-
-#### Writer
-
-Link dumps can be written in [BEACON format](http://gbv.github.io/beaconspec/beacon.html#beacon-format) to a string or to a stream:
-
-~~~javascript
-writer = beacon.Writer()
-writer.writeMeta(metaFields)
-writer.writeTokens(source, annotation, target)
-process.stdout.write(writer.output)
-
-writer = beacon.Writer(process.stdout)
-writer.writeMeta(metaFields)
-writer.writeTokens(source, annotation, target)
-~~~
-
-Writers can be configured with:
-
-* `omitDefaults` to omit meta fields with default values (false by default)
-* `omitEmptyLine` to omit the empty line after meta fields
-* `highlight`: optional object with functions to highlight
-    * `delimiter` (delimiter characters)
-    * `field` (meta field name)
-    * `value` (meta field value)
-    * `source` (source token)
-    * `annotation` (annotation token)
-    * `target` (target token)
-
-#### Error
-
-An `Error` object is extended by properties `number` and `line` for parsing errors.
-
-#### URIPattern
+### URIPattern
 
 Implements [BEACON link dumps](http://gbv.github.io/beaconspec/beacon.html#uri-patterns)
 
@@ -216,28 +243,9 @@ interface URIPattern {
 
 The `match` method can be used to abbreviate a URI to a token.
 
-#### RDFMapper
+## Storage
 
-~~~
-interface RDFMapper {
-  Object *triples(LinkDump dump);
-
-  Object *metaTriples(MetaFields meta);
-  Object *linkTriples(Link link, String annotation);
-  Object *countTriples();
-}
-~~~
-
-BEACON link dumps can be mapped to RDF with the `rdfmapper` function. It requires an instance of the [JavaScript RDF Interfaces DataFactory interface].
-
-~~~javascript
-const { RDFMapper } = require('beacon-links')
-
-var mapper = RDFMapper(dataFactory)
-for (let triple of mapper.triples(linkDump)) {
-  // ...
-}
-~~~
+An experimental `TokenIndex` is included to efficiently store and query links in memory.
 
 
 [JavaScript RDF Interfaces DataFactory interface]: http://rdf.js.org/#datafactory-interface
@@ -251,3 +259,11 @@ Clone this [project from github](https://github.com/gbv/beacon-js)
 
     git clone https://github.com/gbv/beacon-js.git
 
+
+[BEACON format]: http://gbv.github.io/beaconspec/beacon.html#beacon-format
+
+[MetaFields]: #MetaFields
+[Link]: #link
+
+[Error]: https://nodejs.org/api/errors.html
+[streams]: http://nodejs.org/api/stream.html

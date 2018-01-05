@@ -83,7 +83,7 @@ const stream = (file === '-' ? process.stdin : fs.createReadStream(file))
 if (opt.format === 'json') {
   if (opt.meta) {
     stream.on('meta', meta => {
-      stdout.write(JSON.stringify(meta.simplify(opt.brief), null, 4) + '\n')
+      stdout.write(JSON.stringify(meta.getValues(opt.brief), null, 4) + '\n')
     })
   } else {
     stream.on('data', link => stdout.write(JSON.stringify(link) + '\n'))
@@ -152,6 +152,6 @@ if (opt.format === 'json') {
   }
 
   if (!opt.meta) {
-    stream.on('token', tokens => writer.writeTokens(...tokens))
+    stream.on('tokens', tokens => writer.writeTokens(...tokens))
   }
 }
