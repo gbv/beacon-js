@@ -28,7 +28,7 @@ test('Parser', done => {
   .on('end', () => {
     checkMeta(meta)
     checkLinks(links)
-    expect(tokens.length).toBe(12)
+    expect(tokens.length).toBe(7)
     done()
   })
 })
@@ -39,6 +39,15 @@ test('parse stream', () => {
       checkMeta(dump.meta)
       checkLinks(dump.links)
     })
+})
+
+test('parse error with event', done => {
+  createReadStream('test/malformed.txt')
+  .pipe(Parser())
+  .on('error', e => {
+    expect(e).toBeTruthy()
+    done()
+  })
 })
 
 test('parse string', () => {

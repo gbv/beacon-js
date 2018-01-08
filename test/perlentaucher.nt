@@ -1,0 +1,19 @@
+_:dump <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rdfs.org/ns/void#Linkset> .
+_:dump <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/hydra/core#Collection> .
+_:dump <http://rdfs.org/ns/void#subjectsTarget> _:sourceset .
+_:dump <http://rdfs.org/ns/void#objectsTarget> <http://www.wikidata.org/entity/Q2071388> .
+_:sourceset <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rdfs.org/ns/void#Dataset> .
+<http://www.wikidata.org/entity/Q2071388> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rdfs.org/ns/void#Dataset> .
+_:dump <http://creativecommons.org/ns#license> <http://creativecommons.org/publicdomain/zero/1.0/> .
+_:sourceset <http://rdfs.org/ns/void#uriSpace> "http://d-nb.info/gnd/" .
+<http://www.wikidata.org/entity/Q2071388> <http://rdfs.org/ns/void#uriSpace> "http://www.perlentaucher.de/autor/" .
+_:dump <http://rdfs.org/ns/void#linkPredicate> <http://www.w3.org/2000/01/rdf-schema#seeAlso> .
+_:dump <http://purl.org/dc/terms/modified> "2017-11-24" .
+_:dump <http://purl.org/dc/terms/title> "Perlentaucher" .
+
+<http://d-nb.info/gnd/118757261> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.perlentaucher.de/autor/dylan-thomas.html> .
+<http://d-nb.info/gnd/128915706> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://www.perlentaucher.de/autor/shirin-ebadi.html> .
+
+_:dump <http://www.w3.org/ns/hydra/core#totalItems> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:dump <http://rdfs.org/ns/void#entities> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:dump <http://rdfs.org/ns/void#triples> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
