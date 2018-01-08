@@ -1,4 +1,5 @@
 const { TokenIndex } = require('../index')
+const { createReadStream } = require('fs')
 
 test('TokenIndex', () => {
   var index = TokenIndex()
@@ -35,4 +36,18 @@ test('TokenIndex', () => {
   expect([...index.queryTokens('foo', 'bar', 'doz')]).toEqual([tokens[1]])
   expect([...index.queryTokens('foo', undefined, 'doz')]).toEqual([tokens[1]])
   expect([...index.queryTokens(undefined, 'bar', 'doz')]).toEqual([tokens[1]])
+})
+
+test('TokenIndex piped', done => {
+  var index = TokenIndex()
+  var stream = createReadStream('test/example.txt')
+
+  index.parse(stream, () => {
+    expect([...index.queryTokens()]).toEqual([
+      [ 'source', '', 'annotation' ],
+      [ 'source', 'target', '' ],
+      [ 'source', 'target', 'annotation' ]
+    ])
+    done()
+  })
 })

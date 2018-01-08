@@ -5,13 +5,13 @@
 [![Coverage](https://img.shields.io/coveralls/gbv/beacon-js/master.svg?style=flat-square)](https://coveralls.io/r/gbv/beacon-js)
 [![License](https://img.shields.io/npm/l/beacon-links.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-JavaScript implementation of [BEACON link dump format](https://gbv.github.io/beaconspec/). The `beacon-links` package provides:
+JavaScript implementation of [BEACON link dump format](https://gbv.github.io/beaconspec/). The `beacon-links` package provides for:
 
 * **[Parsing](#parsing)** BEACON link dump format
 * **[Writing](#writing)** BEACON link dump format
-* **[RDF Mapping](#rdf-mapping)** of link dumps
-* **[Storage](#storage)** of link dumps in memory
-* **[command line client](#command-line-client)**
+* **[RDF Mapping](#rdf-mapping)** BEACON link dumps
+* **[Storage](#storage)** of BEACON link dumps in memory
+* **[command line client](#command-line-client)** for processing BEACON link dumps
 
 ## Installation
 
@@ -95,7 +95,7 @@ parser.parse(input)
 For more details and large data sets the parser should better be used on [streams]. Parsing emits:
 
 * a `meta` event for all meta fields combined (a [MetaFields])
-* a `tokens` event for each non-empty link line (an array of tokens)
+* a `tokens` event for each non-empty link line, passed as non-normalized array of tokens
 * a `data` event for each constructed link (a [Link])
 * a `error` event on parsing errors
 
@@ -107,6 +107,7 @@ fs.createReadStream('beacon-file.txt')
   .on('tokens', tokens => ... )
   .on('data', link => ... )
   .on('error', error => ... )
+  .on('end', () => ... ) // called after successful parsing
 ~~~
 
 ## Writing
@@ -238,15 +239,27 @@ interface URIPattern {
   attribute string uriRegexPattern;  // not implemented yet
   string toString();
   string match(string);
+  boolean isDefault();
 }
 ~~~
 
-The `match` method can be used to abbreviate a URI to a token.
+The `match` method can be used to abbreviate a URI to a token. Method `isDefault` return whether the pattern is `{+ID}`.
 
 ## Storage
 
 An experimental `TokenIndex` is included to efficiently store and query links in memory.
 
+To index a BEACON link dump:
+
+~~~javascript
+var input = fs.createReadStream('beacon-file.txt')
+var index = beacon.TokenIndex()
+
+index.parse(stream, (error) => {
+  // called on success or error
+})
+.on('meta', metaFields => { ... }) // optional
+~~~
 
 [JavaScript RDF Interfaces DataFactory interface]: http://rdf.js.org/#datafactory-interface
 [rdf-ext]: https://www.npmjs.com/package/rdf-ext
