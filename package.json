@@ -1,6 +1,6 @@
 {
   "name": "beacon-links",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "BEACON link dump format implementation in JavaScript",
   "author": "Jakob Voß",
   "main": "index.js",
