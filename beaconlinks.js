@@ -69,8 +69,8 @@ const highlight = opt.color ? {
   iri: s => '\u001b[32m' + s + '\u001b[39m'
 } : {}
 
-const stream = (file === '-' ? process.stdin : fs.createReadStream(file))
-  .pipe(beacon.Parser({}))
+const input = (file === '-' ? process.stdin : fs.createReadStream(file))
+const stream = input.pipe(beacon.Parser())
   .on('error', error => {
     var msg = error
     if (error.number !== undefined) msg += ' ' + error.number
@@ -84,6 +84,7 @@ if (opt.format === 'json') {
   if (opt.meta) {
     stream.on('meta', meta => {
       stdout.write(JSON.stringify(meta.getValues(opt.brief), null, 4) + '\n')
+      input.destroy()
     })
   } else {
     stream.on('data', link => stdout.write(JSON.stringify(link) + '\n'))
@@ -120,6 +121,9 @@ if (opt.format === 'json') {
       for (let triple of rdfmapper.metaTriples(meta)) {
         stdout.write(triple)
       }
+      if (opt.meta) {
+        input.destroy()
+      }
       stdout.write('\n')
     })
   }
@@ -148,7 +152,12 @@ if (opt.format === 'json') {
   })
 
   if (!opt.links) {
-    stream.on('meta', meta => writer.writeMeta(meta))
+    stream.on('meta', meta => {
+      writer.writeMeta(meta)
+      if (opt.meta) {
+        input.destroy()
+      }
+    })
   }
 
   if (!opt.meta) {

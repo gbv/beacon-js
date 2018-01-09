@@ -110,6 +110,16 @@ fs.createReadStream('beacon-file.txt')
   .on('end', () => ... ) // called after successful parsing
 ~~~
 
+To only parse meta fields, close the input stream like this:
+
+~~~javascript
+var input = fs.createReadStream('beacon-file.txt')
+input.pipe(parser).on('meta' => {
+  // ... 
+  input.destroy()
+})
+~~~
+
 ## Writing
 
 A `Writer` writes [BEACON format] to strings:
